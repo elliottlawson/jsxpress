@@ -17,7 +17,8 @@ Paste JSX from an AI chat, a component body, or a small React component file int
   - raw JSX markup
   - component bodies with hooks
   - common `export default` React snippets
-  - common `lucide-react` icon imports
+  - common AI-sandbox imports like `lucide-react`, `framer-motion`, `clsx`, `tailwind-merge`, `class-variance-authority`, `next/link`, `next/image`, `next/navigation`, and `lib/utils` `cn`
+- Tailwind utility-class snippets without a build step
 - Example, copy, and share-link controls
 - Empty-first editor with a resizable split view on desktop
 - Mobile responsive split-pane layout

@@ -365,6 +365,9 @@
         }
       }
     </style>
+    <style type="text/tailwindcss">
+      @import "tailwindcss";
+    </style>
   </head>
   <body>
     <div class="app-shell">
@@ -448,6 +451,8 @@
     <script>
       window.react = window.React;
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/framer-motion@12/dist/framer-motion.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/lucide-react@1/dist/umd/lucide-react.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js"></script>
     <script>
@@ -708,6 +713,265 @@ return (
         return value.replace(/^\s*["']use client["'];?\s*$/gm, "");
       }
 
+      function clsx() {
+        let className = "";
+
+        function append(value) {
+          if (!value) {
+            return;
+          }
+
+          if (typeof value === "string" || typeof value === "number") {
+            className += (className ? " " : "") + value;
+            return;
+          }
+
+          if (Array.isArray(value)) {
+            for (const item of value) {
+              append(item);
+            }
+            return;
+          }
+
+          if (typeof value === "object") {
+            for (const key in value) {
+              if (value[key]) {
+                className += (className ? " " : "") + key;
+              }
+            }
+          }
+        }
+
+        for (const argument of arguments) {
+          append(argument);
+        }
+
+        return className;
+      }
+
+      function twMerge() {
+        return clsx.apply(null, arguments);
+      }
+
+      function cn() {
+        return twMerge(clsx.apply(null, arguments));
+      }
+
+      function cva(base, config) {
+        const options = config || {};
+        const variants = options.variants || {};
+        const defaultVariants = options.defaultVariants || {};
+        const compoundVariants = options.compoundVariants || [];
+
+        return function (props) {
+          const resolved = props || {};
+          const classes = [base];
+
+          for (const variantName in variants) {
+            const variantValue =
+              resolved[variantName] !== undefined
+                ? resolved[variantName]
+                : defaultVariants[variantName];
+            const lookupKey =
+              typeof variantValue === "boolean"
+                ? String(variantValue)
+                : variantValue;
+
+            if (
+              lookupKey != null &&
+              Object.prototype.hasOwnProperty.call(
+                variants[variantName],
+                lookupKey
+              )
+            ) {
+              classes.push(variants[variantName][lookupKey]);
+            }
+          }
+
+          for (const compoundVariant of compoundVariants) {
+            let matches = true;
+
+            for (const key in compoundVariant) {
+              if (key === "class" || key === "className") {
+                continue;
+              }
+
+              const actualValue =
+                resolved[key] !== undefined ? resolved[key] : defaultVariants[key];
+              const expectedValue = compoundVariant[key];
+
+              if (Array.isArray(expectedValue)) {
+                if (!expectedValue.includes(actualValue)) {
+                  matches = false;
+                  break;
+                }
+              } else if (actualValue !== expectedValue) {
+                matches = false;
+                break;
+              }
+            }
+
+            if (matches) {
+              classes.push(compoundVariant.class, compoundVariant.className);
+            }
+          }
+
+          classes.push(resolved.class, resolved.className);
+          return cn.apply(null, classes);
+        };
+      }
+
+      function HeadComponent(props) {
+        return React.createElement(React.Fragment, null, props.children);
+      }
+
+      function LinkComponent(props) {
+        const nextProps = Object.assign({}, props);
+        const href = nextProps.href;
+
+        delete nextProps.prefetch;
+        delete nextProps.replace;
+        delete nextProps.scroll;
+        delete nextProps.shallow;
+        delete nextProps.locale;
+
+        return React.createElement(
+          "a",
+          Object.assign(
+            {
+              href: typeof href === "string" ? href : "#"
+            },
+            nextProps
+          ),
+          props.children
+        );
+      }
+
+      function ImageComponent(props) {
+        const imageProps = Object.assign({}, props);
+        const fill = Boolean(imageProps.fill);
+        const style = Object.assign({}, imageProps.style);
+
+        delete imageProps.fill;
+        delete imageProps.priority;
+        delete imageProps.placeholder;
+        delete imageProps.blurDataURL;
+        delete imageProps.loader;
+        delete imageProps.quality;
+        delete imageProps.unoptimized;
+
+        if (fill) {
+          style.height = style.height || "100%";
+          style.width = style.width || "100%";
+          style.objectFit = style.objectFit || imageProps.objectFit || "cover";
+          style.position = style.position || "absolute";
+          style.inset = style.inset || 0;
+        }
+
+        delete imageProps.objectFit;
+        imageProps.style = style;
+
+        if (typeof imageProps.src !== "string") {
+          imageProps.src = "";
+        }
+
+        return React.createElement("img", imageProps);
+      }
+
+      function useRouter() {
+        return {
+          back: function () {
+            window.history.back();
+          },
+          forward: function () {
+            window.history.forward();
+          },
+          prefetch: function () {
+            return Promise.resolve();
+          },
+          push: function (href) {
+            if (typeof href === "string") {
+              window.history.pushState(null, "", href);
+            }
+          },
+          refresh: function () {
+            window.location.reload();
+          },
+          replace: function (href) {
+            if (typeof href === "string") {
+              window.history.replaceState(null, "", href);
+            }
+          }
+        };
+      }
+
+      function usePathname() {
+        return window.location.pathname;
+      }
+
+      function useSearchParams() {
+        return new URLSearchParams(window.location.search);
+      }
+
+      function useParams() {
+        return {};
+      }
+
+      function useSelectedLayoutSegment() {
+        return null;
+      }
+
+      function useSelectedLayoutSegments() {
+        return [];
+      }
+
+      const JSXPressCompat = {
+        Head: HeadComponent,
+        Image: ImageComponent,
+        Link: LinkComponent,
+        classNames: clsx,
+        clsx: clsx,
+        cn: cn,
+        cva: cva,
+        cx: clsx,
+        twMerge: twMerge,
+        useParams: useParams,
+        usePathname: usePathname,
+        useRouter: useRouter,
+        useSearchParams: useSearchParams,
+        useSelectedLayoutSegment: useSelectedLayoutSegment,
+        useSelectedLayoutSegments: useSelectedLayoutSegments
+      };
+
+      const REACT_SCOPE_BINDINGS = new Set([
+        "Children",
+        "Fragment",
+        "Suspense",
+        "cloneElement",
+        "createContext",
+        "createElement",
+        "forwardRef",
+        "isValidElement",
+        "lazy",
+        "memo",
+        "startTransition",
+        "useCallback",
+        "useContext",
+        "useDebugValue",
+        "useDeferredValue",
+        "useEffect",
+        "useId",
+        "useImperativeHandle",
+        "useInsertionEffect",
+        "useLayoutEffect",
+        "useMemo",
+        "useReducer",
+        "useRef",
+        "useState",
+        "useSyncExternalStore",
+        "useTransition"
+      ]);
+
       function normalizeImportBinding(binding) {
         const trimmed = binding.trim().replace(/^type\s+/, "");
         const match = trimmed.match(
@@ -734,18 +998,108 @@ return (
         return "const { " + bindings.join(", ") + " } = " + sourceName + ";";
       }
 
+      function buildReactImportDestructuring(specifiers) {
+        const bindings = specifiers
+          .split(",")
+          .map(function (binding) {
+            const trimmed = binding.trim().replace(/^type\s+/, "");
+
+            if (!trimmed) {
+              return "";
+            }
+
+            const aliasMatch = trimmed.match(
+              /^([A-Za-z_$][A-Za-z0-9_$]*)\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)$/
+            );
+
+            if (aliasMatch) {
+              return aliasMatch[1] + ": " + aliasMatch[2];
+            }
+
+            return REACT_SCOPE_BINDINGS.has(trimmed) ? "" : trimmed;
+          })
+          .filter(Boolean);
+
+        if (bindings.length === 0) {
+          return "";
+        }
+
+        return "const { " + bindings.join(", ") + " } = React;";
+      }
+
       function transformSupportedImport(statement) {
         const trimmed = statement.trim();
         let match = null;
 
+        if (/^import\s+type\b/.test(trimmed)) {
+          return "";
+        }
+
         if (
-          /from\s+["']react(?:\/jsx-runtime)?["']\s*;?\s*$/.test(trimmed) ||
-          /from\s+["']react-dom\/client["']\s*;?\s*$/.test(trimmed) ||
           /^import\s+["'][^"']+\.(?:css|scss|sass|less)["']\s*;?\s*$/.test(
             trimmed
           )
         ) {
           return "";
+        }
+
+        match = trimmed.match(
+          /^import\s*\{([\s\S]*?)\}\s*from\s*["']react(?:\/jsx-runtime)?["']\s*;?$/
+        );
+
+        if (match) {
+          return buildReactImportDestructuring(match[1]);
+        }
+
+        match = trimmed.match(
+          /^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["']react(?:\/jsx-runtime)?["']\s*;?$/
+        );
+
+        if (match) {
+          return match[1] === "React" ? "" : "const " + match[1] + " = React;";
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*,\s*\{([\s\S]*?)\}\s*from\s*["']react(?:\/jsx-runtime)?["']\s*;?$/
+        );
+
+        if (match) {
+          const named = buildReactImportDestructuring(match[2]);
+          const defaultBinding =
+            match[1] === "React" ? "" : "const " + match[1] + " = React;";
+          return [defaultBinding, named].filter(Boolean).join("\n");
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["']react(?:\/jsx-runtime)?["']\s*;?$/
+        );
+
+        if (match) {
+          return match[1] === "React" ? "" : "const " + match[1] + " = React;";
+        }
+
+        match = trimmed.match(
+          /^import\s*\{([\s\S]*?)\}\s*from\s*["']react-dom\/client["']\s*;?$/
+        );
+
+        if (match) {
+          return buildObjectDestructuring(match[1], "ReactDOM");
+        }
+
+        match = trimmed.match(
+          /^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["']react-dom\/client["']\s*;?$/
+        );
+
+        if (match) {
+          return "const " + match[1] + " = ReactDOM;";
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["']react-dom\/client["']\s*;?$/
+        );
+
+        if (match) {
+          return "const " + match[1] + " = ReactDOM;";
         }
 
         match = trimmed.match(
@@ -779,6 +1133,143 @@ return (
 
         if (match) {
           return "const " + match[1] + " = LucideReact;";
+        }
+
+        match = trimmed.match(
+          /^import\s*\{([\s\S]*?)\}\s*from\s*["'](?:framer-motion|motion\/react)["']\s*;?$/
+        );
+
+        if (match) {
+          return buildObjectDestructuring(match[1], "Motion");
+        }
+
+        match = trimmed.match(
+          /^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["'](?:framer-motion|motion\/react)["']\s*;?$/
+        );
+
+        if (match) {
+          return "const " + match[1] + " = Motion;";
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*,\s*\{([\s\S]*?)\}\s*from\s*["'](?:framer-motion|motion\/react)["']\s*;?$/
+        );
+
+        if (match) {
+          const named = buildObjectDestructuring(match[2], "Motion");
+          return "const " + match[1] + " = Motion;\n" + named;
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["'](?:framer-motion|motion\/react)["']\s*;?$/
+        );
+
+        if (match) {
+          return "const " + match[1] + " = Motion;";
+        }
+
+        match = trimmed.match(
+          /^import\s*\{([\s\S]*?)\}\s*from\s*["']clsx["']\s*;?$/
+        );
+
+        if (match) {
+          return buildObjectDestructuring(match[1], "JSXPressCompat");
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["']clsx["']\s*;?$/
+        );
+
+        if (match) {
+          return "const " + match[1] + " = JSXPressCompat.clsx;";
+        }
+
+        match = trimmed.match(
+          /^import\s*\{([\s\S]*?)\}\s*from\s*["']classnames["']\s*;?$/
+        );
+
+        if (match) {
+          return buildObjectDestructuring(match[1], "JSXPressCompat");
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["']classnames["']\s*;?$/
+        );
+
+        if (match) {
+          return "const " + match[1] + " = JSXPressCompat.classNames;";
+        }
+
+        match = trimmed.match(
+          /^import\s*\{([\s\S]*?)\}\s*from\s*["']class-variance-authority["']\s*;?$/
+        );
+
+        if (match) {
+          return buildObjectDestructuring(match[1], "JSXPressCompat");
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["']class-variance-authority["']\s*;?$/
+        );
+
+        if (match) {
+          return "const " + match[1] + " = JSXPressCompat.cva;";
+        }
+
+        match = trimmed.match(
+          /^import\s*\{([\s\S]*?)\}\s*from\s*["']tailwind-merge["']\s*;?$/
+        );
+
+        if (match) {
+          return buildObjectDestructuring(match[1], "JSXPressCompat");
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["']tailwind-merge["']\s*;?$/
+        );
+
+        if (match) {
+          return "const " + match[1] + " = JSXPressCompat.twMerge;";
+        }
+
+        match = trimmed.match(
+          /^import\s*\{([\s\S]*?)\}\s*from\s*["'](?:[@~]\/|\.\.\/|\.\/)?lib\/utils(?:\.[A-Za-z0-9_-]+)?["']\s*;?$/
+        );
+
+        if (match) {
+          return buildObjectDestructuring(match[1], "JSXPressCompat");
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["']next\/link["']\s*;?$/
+        );
+
+        if (match) {
+          return "const " + match[1] + " = JSXPressCompat.Link;";
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["']next\/image["']\s*;?$/
+        );
+
+        if (match) {
+          return "const " + match[1] + " = JSXPressCompat.Image;";
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["']next\/head["']\s*;?$/
+        );
+
+        if (match) {
+          return "const " + match[1] + " = JSXPressCompat.Head;";
+        }
+
+        match = trimmed.match(
+          /^import\s*\{([\s\S]*?)\}\s*from\s*["']next\/navigation["']\s*;?$/
+        );
+
+        if (match) {
+          return buildObjectDestructuring(match[1], "JSXPressCompat");
         }
 
         return statement;
@@ -934,7 +1425,7 @@ return (
 
         if (/^\s*(?:import|export)\b/m.test(source)) {
           throw new Error(
-            "Only self-contained snippets and browser-supported imports are supported. React and lucide-react work; remove other external imports and exports."
+            "Only self-contained snippets and browser-supported imports are supported. React, lucide-react, framer-motion, clsx/classnames, cva, tailwind-merge, next/link, next/image, next/navigation, and lib/utils cn helpers work; remove other external imports and exports."
           );
         }
 
@@ -985,6 +1476,8 @@ return (
         const createComponent = new Function(
           "React",
           "LucideReact",
+          "Motion",
+          "JSXPressCompat",
           '"use strict";\n' +
             "const { Children, Fragment, Suspense, cloneElement, createContext, createElement, forwardRef, isValidElement, lazy, memo, startTransition, useCallback, useContext, useDebugValue, useDeferredValue, useEffect, useId, useImperativeHandle, useInsertionEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore, useTransition } = React;\n" +
             compiled +
@@ -994,7 +1487,12 @@ return (
             "return __jsxpressComponent;"
         );
 
-        return createComponent(React, window.LucideReact || {});
+        return createComponent(
+          React,
+          window.LucideReact || {},
+          window.Motion || {},
+          JSXPressCompat
+        );
       }
 
       function renderPreview(source) {
@@ -1008,6 +1506,13 @@ return (
             React.createElement(Component)
           )
         );
+
+        if (
+          window.tailwind &&
+          typeof window.tailwind.refresh === "function"
+        ) {
+          window.tailwind.refresh();
+        }
       }
 
       function performRender() {
