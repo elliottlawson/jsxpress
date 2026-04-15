@@ -445,6 +445,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
+    <script>
+      window.react = window.React;
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide-react@1/dist/umd/lucide-react.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js"></script>
     <script>
       const STORAGE_KEY = "jsxpress-source";
@@ -704,14 +708,80 @@ return (
         return value.replace(/^\s*["']use client["'];?\s*$/gm, "");
       }
 
-      function isSupportedImport(statement) {
-        return (
-          /from\s+["']react(?:\/jsx-runtime)?["']\s*;?\s*$/.test(statement) ||
-          /from\s+["']react-dom\/client["']\s*;?\s*$/.test(statement) ||
-          /^import\s+["'][^"']+\.(?:css|scss|sass|less)["']\s*;?\s*$/.test(
-            statement.trim()
-          )
+      function normalizeImportBinding(binding) {
+        const trimmed = binding.trim().replace(/^type\s+/, "");
+        const match = trimmed.match(
+          /^([A-Za-z_$][A-Za-z0-9_$]*)\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)$/
         );
+
+        if (match) {
+          return match[1] + ": " + match[2];
+        }
+
+        return trimmed;
+      }
+
+      function buildObjectDestructuring(specifiers, sourceName) {
+        const bindings = specifiers
+          .split(",")
+          .map(normalizeImportBinding)
+          .filter(Boolean);
+
+        if (bindings.length === 0) {
+          return "";
+        }
+
+        return "const { " + bindings.join(", ") + " } = " + sourceName + ";";
+      }
+
+      function transformSupportedImport(statement) {
+        const trimmed = statement.trim();
+        let match = null;
+
+        if (
+          /from\s+["']react(?:\/jsx-runtime)?["']\s*;?\s*$/.test(trimmed) ||
+          /from\s+["']react-dom\/client["']\s*;?\s*$/.test(trimmed) ||
+          /^import\s+["'][^"']+\.(?:css|scss|sass|less)["']\s*;?\s*$/.test(
+            trimmed
+          )
+        ) {
+          return "";
+        }
+
+        match = trimmed.match(
+          /^import\s*\{([\s\S]*?)\}\s*from\s*["']lucide-react["']\s*;?$/
+        );
+
+        if (match) {
+          return buildObjectDestructuring(match[1], "LucideReact");
+        }
+
+        match = trimmed.match(
+          /^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["']lucide-react["']\s*;?$/
+        );
+
+        if (match) {
+          return "const " + match[1] + " = LucideReact;";
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*,\s*\{([\s\S]*?)\}\s*from\s*["']lucide-react["']\s*;?$/
+        );
+
+        if (match) {
+          const named = buildObjectDestructuring(match[2], "LucideReact");
+          return "const " + match[1] + " = LucideReact;\n" + named;
+        }
+
+        match = trimmed.match(
+          /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s*["']lucide-react["']\s*;?$/
+        );
+
+        if (match) {
+          return "const " + match[1] + " = LucideReact;";
+        }
+
+        return statement;
       }
 
       function stripSupportedImports(value) {
@@ -722,8 +792,12 @@ return (
 
         function flushImportBuffer() {
           const statement = importBuffer.join("\n").trim();
-          if (statement && !isSupportedImport(statement)) {
-            keptLines.push(importBuffer.join("\n"));
+          if (statement) {
+            const transformed = transformSupportedImport(statement);
+
+            if (transformed) {
+              keptLines.push(transformed);
+            }
           }
           importBuffer = [];
           importOpen = false;
@@ -860,7 +934,7 @@ return (
 
         if (/^\s*(?:import|export)\b/m.test(source)) {
           throw new Error(
-            "Only self-contained React snippets are supported. Remove external imports and exports."
+            "Only self-contained snippets and browser-supported imports are supported. React and lucide-react work; remove other external imports and exports."
           );
         }
 
@@ -910,6 +984,7 @@ return (
 
         const createComponent = new Function(
           "React",
+          "LucideReact",
           '"use strict";\n' +
             "const { Children, Fragment, Suspense, cloneElement, createContext, createElement, forwardRef, isValidElement, lazy, memo, startTransition, useCallback, useContext, useDebugValue, useDeferredValue, useEffect, useId, useImperativeHandle, useInsertionEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore, useTransition } = React;\n" +
             compiled +
@@ -919,7 +994,7 @@ return (
             "return __jsxpressComponent;"
         );
 
-        return createComponent(React);
+        return createComponent(React, window.LucideReact || {});
       }
 
       function renderPreview(source) {

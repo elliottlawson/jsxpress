@@ -17,6 +17,7 @@ Paste JSX from an AI chat, a component body, or a small React component file int
   - raw JSX markup
   - component bodies with hooks
   - common `export default` React snippets
+  - common `lucide-react` icon imports
 - Example, copy, and share-link controls
 - Empty-first editor with a resizable split view on desktop
 - Mobile responsive split-pane layout
