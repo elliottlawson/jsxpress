@@ -17,12 +17,18 @@ Paste JSX from an AI chat, a component body, or a small React component file int
   - raw JSX markup
   - component bodies with hooks
   - common `export default` React snippets
-- Copy and reset controls
+- Copy, reset, and share-link controls
 - Mobile responsive split-pane layout
 
 ## How it works
 
 JSXPress loads React, ReactDOM, and `@babel/standalone` from a CDN. User input is normalized into a renderable component, transpiled in the browser, and mounted with `ReactDOM.createRoot`.
+
+Shared links store the current snippet in the URL hash so someone else can open the same JSX without needing a server-side backend.
+
+## Safety note
+
+Pasted code is transpiled and executed directly in the browser so event handlers and interactive components work in the preview. Treat shared snippets as code you trust, just as you would with any local HTML/JS playground.
 
 ## Local usage
 

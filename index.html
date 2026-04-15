@@ -378,6 +378,13 @@
               </button>
               <button
                 class="action-button secondary"
+                id="share-button"
+                type="button"
+              >
+                Copy link
+              </button>
+              <button
+                class="action-button secondary"
                 id="reset-button"
                 type="button"
               >
@@ -477,6 +484,7 @@ return (
 
       const editor = document.getElementById("editor");
       const copyButton = document.getElementById("copy-button");
+      const shareButton = document.getElementById("share-button");
       const resetButton = document.getElementById("reset-button");
       const errorPanel = document.getElementById("error-panel");
       const statusChip = document.getElementById("status-chip");
@@ -575,6 +583,33 @@ return (
 
       function normalizeLineEndings(value) {
         return value.replace(/\r\n?/g, "\n");
+      }
+
+      function encodeSource(value) {
+        const bytes = new TextEncoder().encode(value);
+        let binary = "";
+
+        for (const byte of bytes) {
+          binary += String.fromCharCode(byte);
+        }
+
+        return btoa(binary)
+          .replace(/\+/g, "-")
+          .replace(/\//g, "_")
+          .replace(/=+$/g, "");
+      }
+
+      function decodeSource(value) {
+        const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+        const padding = normalized.length % 4;
+        const padded =
+          normalized + (padding === 0 ? "" : "=".repeat(4 - padding));
+        const binary = atob(padded);
+        const bytes = Uint8Array.from(binary, function (char) {
+          return char.charCodeAt(0);
+        });
+
+        return new TextDecoder().decode(bytes);
       }
 
       function stripUseClientDirectives(value) {
@@ -788,7 +823,7 @@ return (
         const createComponent = new Function(
           "React",
           '"use strict";\n' +
-            "const { Fragment, useCallback, useContext, useEffect, useId, useLayoutEffect, useMemo, useReducer, useRef, useState } = React;\n" +
+            "const { Children, Fragment, Suspense, cloneElement, createContext, createElement, forwardRef, isValidElement, lazy, memo, startTransition, useCallback, useContext, useDebugValue, useDeferredValue, useEffect, useId, useImperativeHandle, useInsertionEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore, useTransition } = React;\n" +
             compiled +
             "\nif (typeof __jsxpressComponent === 'undefined') {\n" +
             "  throw new Error('JSXPress could not find a component to render.');\n" +
@@ -843,6 +878,24 @@ return (
         }
       }
 
+      function buildShareUrl() {
+        const hash = "#jsx=" + encodeSource(editor.value);
+        return window.location.origin + window.location.pathname + hash;
+      }
+
+      async function copyShareLink() {
+        try {
+          await navigator.clipboard.writeText(buildShareUrl());
+          const previousLabel = shareButton.textContent;
+          shareButton.textContent = "Link copied";
+          window.setTimeout(function () {
+            shareButton.textContent = previousLabel;
+          }, COPY_RESET_DELAY);
+        } catch (error) {
+          showError("Copy link failed. Your browser may be blocking clipboard access.");
+        }
+      }
+
       function resetSource() {
         editor.value = DEFAULT_SOURCE;
         persistSource();
@@ -853,7 +906,29 @@ return (
         localStorage.setItem(STORAGE_KEY, editor.value);
       }
 
+      function readSourceFromHash() {
+        const match = window.location.hash.match(/^#jsx=([\s\S]+)$/);
+
+        if (!match) {
+          return "";
+        }
+
+        try {
+          return decodeSource(match[1]);
+        } catch (error) {
+          showError("This shared link could not be decoded.");
+          return "";
+        }
+      }
+
       function loadSource() {
+        const shared = readSourceFromHash();
+
+        if (shared) {
+          editor.value = shared;
+          return;
+        }
+
         const saved = localStorage.getItem(STORAGE_KEY);
         editor.value = saved ? saved : DEFAULT_SOURCE;
       }
@@ -874,7 +949,19 @@ return (
       });
 
       copyButton.addEventListener("click", copySource);
+      shareButton.addEventListener("click", copyShareLink);
       resetButton.addEventListener("click", resetSource);
+      window.addEventListener("hashchange", function () {
+        const shared = readSourceFromHash();
+
+        if (!shared) {
+          return;
+        }
+
+        editor.value = shared;
+        persistSource();
+        scheduleRender();
+      });
 
       loadSource();
       performRender();
