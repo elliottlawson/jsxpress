@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSXPress</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0f172a;
+        --panel: #111827;
+        --panel-border: rgba(148, 163, 184, 0.16);
+        --panel-muted: #1f2937;
+        --text: #e5e7eb;
+        --muted: #94a3b8;
+        --accent: #60a5fa;
+        --accent-strong: #3b82f6;
+        --danger-bg: rgba(239, 68, 68, 0.14);
+        --danger-border: rgba(248, 113, 113, 0.35);
+        --danger-text: #fecaca;
+        --preview-bg: #ffffff;
+        --preview-text: #111827;
+        --shadow: 0 16px 50px rgba(15, 23, 42, 0.18);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+        color: var(--text);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      button,
+      textarea {
+        font: inherit;
+      }
+
+      .app-shell {
+        display: grid;
+        grid-template-rows: auto 1fr;
+        min-height: 100vh;
+      }
+
+      .site-header {
+        align-items: center;
+        backdrop-filter: blur(14px);
+        background: rgba(15, 23, 42, 0.84);
+        border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+        display: flex;
+        gap: 18px;
+        justify-content: space-between;
+        padding: 18px 24px;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      .brand {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .brand-mark {
+        color: #f8fafc;
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      .brand-copy {
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.4;
+        max-width: 720px;
+      }
+
+      .workspace {
+        display: grid;
+        gap: 20px;
+        grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
+        min-height: 0;
+        padding: 20px 24px 24px;
+      }
+
+      .pane {
+        border: 1px solid var(--panel-border);
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        display: grid;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .editor-pane {
+        background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+        grid-template-rows: auto auto 1fr auto;
+      }
+
+      .preview-pane {
+        background: var(--preview-bg);
+        color: var(--preview-text);
+        grid-template-rows: auto 1fr;
+      }
+
+      .pane-header,
+      .toolbar {
+        align-items: center;
+        display: flex;
+        gap: 12px;
+        justify-content: space-between;
+        padding: 18px 20px;
+      }
+
+      .pane-header {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      }
+
+      .toolbar {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        color: var(--muted);
+        flex-wrap: wrap;
+        font-size: 0.92rem;
+        line-height: 1.45;
+      }
+
+      .pane-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+
+      .pane-title-group {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .pane-subtitle {
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.4;
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .action-button {
+        appearance: none;
+        background: rgba(96, 165, 250, 0.12);
+        border: 1px solid rgba(96, 165, 250, 0.28);
+        border-radius: 999px;
+        color: #dbeafe;
+        cursor: pointer;
+        font-size: 0.92rem;
+        font-weight: 600;
+        padding: 10px 14px;
+        transition:
+          background 0.15s ease,
+          border-color 0.15s ease,
+          transform 0.15s ease;
+      }
+
+      .action-button:hover {
+        background: rgba(96, 165, 250, 0.18);
+        border-color: rgba(96, 165, 250, 0.42);
+        transform: translateY(-1px);
+      }
+
+      .action-button:active {
+        transform: translateY(0);
+      }
+
+      .action-button.secondary {
+        background: rgba(148, 163, 184, 0.08);
+        border-color: rgba(148, 163, 184, 0.2);
+        color: var(--text);
+      }
+
+      .editor {
+        background: transparent;
+        border: 0;
+        color: var(--text);
+        min-height: 0;
+        outline: none;
+        overflow: auto;
+        padding: 20px;
+        resize: none;
+        width: 100%;
+        font-family:
+          "SFMono-Regular", SFMono-Regular, ui-monospace, Menlo, Monaco,
+          Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.94rem;
+        line-height: 1.6;
+        tab-size: 2;
+      }
+
+      .editor::placeholder {
+        color: #64748b;
+      }
+
+      .status-strip {
+        border-top: 1px solid rgba(148, 163, 184, 0.12);
+        display: grid;
+        gap: 10px;
+        padding: 16px 20px 18px;
+      }
+
+      .status-chip {
+        align-items: center;
+        display: inline-flex;
+        gap: 8px;
+        border-radius: 999px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        padding: 7px 11px;
+        width: fit-content;
+      }
+
+      .status-chip.ready {
+        background: rgba(52, 211, 153, 0.14);
+        color: #bbf7d0;
+      }
+
+      .status-chip.rendering {
+        background: rgba(96, 165, 250, 0.14);
+        color: #bfdbfe;
+      }
+
+      .status-chip.error {
+        background: var(--danger-bg);
+        color: var(--danger-text);
+      }
+
+      .error-panel {
+        background: var(--danger-bg);
+        border: 1px solid var(--danger-border);
+        border-radius: 14px;
+        color: var(--danger-text);
+        display: none;
+        font-family:
+          "SFMono-Regular", SFMono-Regular, ui-monospace, Menlo, Monaco,
+          Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 0.88rem;
+        line-height: 1.55;
+        overflow: auto;
+        padding: 14px 16px;
+        white-space: pre-wrap;
+      }
+
+      .error-panel.visible {
+        display: block;
+      }
+
+      .preview-pane .pane-header {
+        border-bottom-color: rgba(15, 23, 42, 0.08);
+      }
+
+      .preview-stage {
+        min-height: 0;
+        overflow: auto;
+        padding: 20px;
+      }
+
+      .preview-canvas {
+        background: #ffffff;
+        border: 1px solid rgba(15, 23, 42, 0.08);
+        border-radius: 16px;
+        min-height: 100%;
+        overflow: auto;
+      }
+
+      .preview-content {
+        min-height: 100%;
+        padding: 24px;
+      }
+
+      .preview-empty,
+      .preview-error {
+        align-items: center;
+        color: #475569;
+        display: grid;
+        gap: 10px;
+        justify-items: start;
+        min-height: 220px;
+        padding: 28px;
+      }
+
+      .preview-empty strong,
+      .preview-error strong {
+        color: #0f172a;
+        font-size: 1rem;
+      }
+
+      .preview-error {
+        background: #fff7f7;
+        border-radius: 16px;
+      }
+
+      .preview-note {
+        color: #64748b;
+        font-size: 0.92rem;
+        line-height: 1.5;
+      }
+
+      @media (max-width: 900px) {
+        .workspace {
+          grid-template-columns: 1fr;
+          grid-template-rows: minmax(360px, 1fr) minmax(320px, 1fr);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .site-header,
+        .workspace {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+
+        .site-header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .pane-header,
+        .toolbar,
+        .status-strip,
+        .preview-stage {
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+
+        .editor {
+          padding: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="site-header">
+        <div class="brand">
+          <div class="brand-mark">JSXPress</div>
+          <div class="brand-copy">
+            Paste JSX, a component body, or a small React component file and
+            see it render instantly.
+          </div>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="pane editor-pane" aria-label="JSX editor">
+          <div class="pane-header">
+            <div class="pane-title-group">
+              <div class="pane-title">Editor</div>
+              <div class="pane-subtitle">
+                Scroll, paste, tweak, and copy your snippet without any setup.
+              </div>
+            </div>
+            <div class="button-row">
+              <button class="action-button" id="copy-button" type="button">
+                Copy JSX
+              </button>
+              <button
+                class="action-button secondary"
+                id="share-button"
+                type="button"
+              >
+                Copy link
+              </button>
+              <button
+                class="action-button secondary"
+                id="reset-button"
+                type="button"
+              >
+                Reset example
+              </button>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            Accepts raw JSX, component bodies with hooks, and common
+            <code>export default</code> React snippets.
+          </div>
+
+          <textarea
+            id="editor"
+            class="editor"
+            spellcheck="false"
+            aria-label="JSX source editor"
+            placeholder="Paste JSX here"
+          ></textarea>
+
+          <div class="status-strip">
+            <div class="status-chip ready" id="status-chip">Ready</div>
+            <div class="error-panel" id="error-panel" role="status"></div>
+          </div>
+        </section>
+
+        <section class="pane preview-pane" aria-label="Rendered preview">
+          <div class="pane-header">
+            <div class="pane-title-group">
+              <div class="pane-title">Preview</div>
+              <div class="pane-subtitle">
+                Live React rendering powered by Babel in the browser.
+              </div>
+            </div>
+          </div>
+          <div class="preview-stage">
+            <div class="preview-canvas">
+              <div class="preview-content" id="preview-root"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js"></script>
+    <script>
+      const STORAGE_KEY = "jsxpress-source";
+      const COPY_RESET_DELAY = 1600;
+      const RENDER_DELAY = 120;
+      const DEFAULT_SOURCE = `const [count, setCount] = React.useState(0);
+
+return (
+  <div
+    style={{
+      color: "#111827",
+      fontFamily: "system-ui, sans-serif",
+      lineHeight: 1.6,
+      padding: 24
+    }}
+  >
+    <p
+      style={{
+        color: "#2563eb",
+        fontSize: 13,
+        fontWeight: 700,
+        letterSpacing: "0.08em",
+        margin: 0,
+        textTransform: "uppercase"
+      }}
+    >
+      JSXPress demo
+    </p>
+    <h1 style={{ marginBottom: 12, marginTop: 10 }}>Render JSX instantly</h1>
+    <p style={{ marginTop: 0 }}>
+      Paste JSX from a chat, component code from a file, or tweak this example.
+    </p>
+    <button
+      onClick={() => setCount(count + 1)}
+      style={{
+        background: "#111827",
+        border: 0,
+        borderRadius: 999,
+        color: "#ffffff",
+        cursor: "pointer",
+        fontSize: 15,
+        fontWeight: 600,
+        padding: "10px 16px"
+      }}
+    >
+      Clicked {count} times
+    </button>
+  </div>
+);`;
+
+      const editor = document.getElementById("editor");
+      const copyButton = document.getElementById("copy-button");
+      const shareButton = document.getElementById("share-button");
+      const resetButton = document.getElementById("reset-button");
+      const errorPanel = document.getElementById("error-panel");
+      const statusChip = document.getElementById("status-chip");
+      const previewRootElement = document.getElementById("preview-root");
+      const previewRoot = ReactDOM.createRoot(previewRootElement);
+
+      let renderTimer = 0;
+      let renderVersion = 0;
+
+      class PreviewErrorBoundary extends React.Component {
+        constructor(props) {
+          super(props);
+          this.state = { error: null };
+        }
+
+        static getDerivedStateFromError(error) {
+          return { error: error };
+        }
+
+        componentDidCatch(error) {
+          showError(error);
+        }
+
+        componentDidUpdate(prevProps) {
+          if (
+            this.state.error &&
+            prevProps.resetKey !== this.props.resetKey
+          ) {
+            this.setState({ error: null });
+          }
+        }
+
+        render() {
+          if (this.state.error) {
+            return React.createElement(
+              "div",
+              { className: "preview-error" },
+              React.createElement("strong", null, "Render error"),
+              React.createElement(
+                "div",
+                { className: "preview-note" },
+                formatErrorMessage(this.state.error)
+              )
+            );
+          }
+
+          return this.props.children;
+        }
+      }
+
+      function setStatus(kind, message) {
+        statusChip.className = "status-chip " + kind;
+        statusChip.textContent = message;
+      }
+
+      function showError(error) {
+        const message = formatErrorMessage(error);
+        errorPanel.textContent = message;
+        errorPanel.classList.add("visible");
+        setStatus("error", "Error");
+
+        previewRoot.render(
+          React.createElement(
+            "div",
+            { className: "preview-empty" },
+            React.createElement("strong", null, "Preview unavailable"),
+            React.createElement(
+              "div",
+              { className: "preview-note" },
+              "Fix the JSX or component code to resume rendering."
+            )
+          )
+        );
+      }
+
+      function clearError() {
+        errorPanel.textContent = "";
+        errorPanel.classList.remove("visible");
+      }
+
+      function formatErrorMessage(error) {
+        if (!error) {
+          return "Unknown error";
+        }
+
+        if (typeof error === "string") {
+          return error;
+        }
+
+        if (error.message) {
+          return error.message;
+        }
+
+        return String(error);
+      }
+
+      function normalizeLineEndings(value) {
+        return value.replace(/\r\n?/g, "\n");
+      }
+
+      function encodeSource(value) {
+        const bytes = new TextEncoder().encode(value);
+        let binary = "";
+
+        for (const byte of bytes) {
+          binary += String.fromCharCode(byte);
+        }
+
+        return btoa(binary)
+          .replace(/\+/g, "-")
+          .replace(/\//g, "_")
+          .replace(/=+$/g, "");
+      }
+
+      function decodeSource(value) {
+        const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+        const padding = normalized.length % 4;
+        const padded =
+          normalized + (padding === 0 ? "" : "=".repeat(4 - padding));
+        const binary = atob(padded);
+        const bytes = Uint8Array.from(binary, function (char) {
+          return char.charCodeAt(0);
+        });
+
+        return new TextDecoder().decode(bytes);
+      }
+
+      function stripUseClientDirectives(value) {
+        return value.replace(/^\s*["']use client["'];?\s*$/gm, "");
+      }
+
+      function isSupportedImport(statement) {
+        return (
+          /from\s+["']react(?:\/jsx-runtime)?["']\s*;?\s*$/.test(statement) ||
+          /from\s+["']react-dom\/client["']\s*;?\s*$/.test(statement) ||
+          /^import\s+["'][^"']+\.(?:css|scss|sass|less)["']\s*;?\s*$/.test(
+            statement.trim()
+          )
+        );
+      }
+
+      function stripSupportedImports(value) {
+        const lines = value.split("\n");
+        const keptLines = [];
+        let importBuffer = [];
+        let importOpen = false;
+
+        function flushImportBuffer() {
+          const statement = importBuffer.join("\n").trim();
+          if (statement && !isSupportedImport(statement)) {
+            keptLines.push(importBuffer.join("\n"));
+          }
+          importBuffer = [];
+          importOpen = false;
+        }
+
+        for (const line of lines) {
+          if (!importOpen && /^\s*import\b/.test(line)) {
+            importOpen = true;
+            importBuffer.push(line);
+
+            if (/;\s*$/.test(line) || /^\s*import\s+["']/.test(line)) {
+              flushImportBuffer();
+            }
+
+            continue;
+          }
+
+          if (importOpen) {
+            importBuffer.push(line);
+
+            if (/;\s*$/.test(line)) {
+              flushImportBuffer();
+            }
+
+            continue;
+          }
+
+          keptLines.push(line);
+        }
+
+        if (importBuffer.length > 0) {
+          flushImportBuffer();
+        }
+
+        return keptLines.join("\n");
+      }
+
+      function convertDefaultExport(value) {
+        if (/^\s*export\s+default\s+function\b/m.test(value)) {
+          return value.replace(
+            /^\s*export\s+default\s+function\b/m,
+            "const __jsxpressComponent = function"
+          );
+        }
+
+        if (/^\s*export\s+default\s+class\b/m.test(value)) {
+          return value.replace(
+            /^\s*export\s+default\s+class\b/m,
+            "const __jsxpressComponent = class"
+          );
+        }
+
+        if (/^\s*export\s+default\s+/m.test(value)) {
+          return value.replace(
+            /^\s*export\s+default\s+/m,
+            "const __jsxpressComponent = "
+          );
+        }
+
+        if (/^\s*module\.exports\s*=\s*/m.test(value)) {
+          return value.replace(
+            /^\s*module\.exports\s*=\s*/m,
+            "const __jsxpressComponent = "
+          );
+        }
+
+        if (/^\s*exports\.default\s*=\s*/m.test(value)) {
+          return value.replace(
+            /^\s*exports\.default\s*=\s*/m,
+            "const __jsxpressComponent = "
+          );
+        }
+
+        return value;
+      }
+
+      function stripNamedExports(value) {
+        return value
+          .replace(
+            /^\s*export\s+(?=(const|let|var|function|class|type|interface)\b)/gm,
+            ""
+          )
+          .replace(/^\s*export\s*\{[\s\S]*?\}\s*;?\s*$/gm, "");
+      }
+
+      function findDeclaredComponentName(value) {
+        const patterns = [
+          /(?:^|\n)\s*function\s+([A-Z][A-Za-z0-9_$]*)\s*\(/g,
+          /(?:^|\n)\s*class\s+([A-Z][A-Za-z0-9_$]*)\s+extends\b/g,
+          /(?:^|\n)\s*(?:const|let|var)\s+([A-Z][A-Za-z0-9_$]*)\s*=\s*(?:async\s*)?(?:\([^=]*\)|[A-Za-z_$][A-Za-z0-9_$]*)\s*=>/g,
+          /(?:^|\n)\s*(?:const|let|var)\s+([A-Z][A-Za-z0-9_$]*)\s*=\s*function\b/g
+        ];
+
+        let detectedName = "";
+
+        for (const pattern of patterns) {
+          let match = pattern.exec(value);
+          while (match) {
+            detectedName = match[1];
+            match = pattern.exec(value);
+          }
+        }
+
+        return detectedName;
+      }
+
+      function indentBlock(value, spaces) {
+        const padding = " ".repeat(spaces);
+        return value
+          .split("\n")
+          .map(function (line) {
+            return line ? padding + line : line;
+          })
+          .join("\n");
+      }
+
+      function normalizeSource(input) {
+        let source = normalizeLineEndings(input).trim();
+
+        if (!source) {
+          throw new Error("Paste some JSX to start rendering.");
+        }
+
+        source = stripUseClientDirectives(source);
+        source = stripSupportedImports(source);
+        source = convertDefaultExport(source);
+        source = stripNamedExports(source).trim();
+
+        if (/\b(?:ReactDOM\.createRoot|createRoot)\s*\(/.test(source)) {
+          throw new Error(
+            "Paste a component or JSX snippet instead of a full app bootstrap."
+          );
+        }
+
+        if (/^\s*(?:import|export)\b/m.test(source)) {
+          throw new Error(
+            "Only self-contained React snippets are supported. Remove external imports and exports."
+          );
+        }
+
+        if (/\bconst\s+__jsxpressComponent\b/.test(source)) {
+          return source;
+        }
+
+        const namedComponent = findDeclaredComponentName(source);
+        if (namedComponent) {
+          return source + "\n\nconst __jsxpressComponent = " + namedComponent + ";";
+        }
+
+        if (
+          /\breturn\b/.test(source) ||
+          /\bReact\.use[A-Z]/.test(source) ||
+          /\buse[A-Z][A-Za-z0-9_]*\s*\(/.test(source) ||
+          /^\s*(const|let|var|if|for|while|switch|try)\b/m.test(source)
+        ) {
+          return (
+            "function __jsxpressComponent() {\n" +
+            indentBlock(source, 2) +
+            "\n}"
+          );
+        }
+
+        return (
+          "function __jsxpressComponent() {\n" +
+          "  return (\n" +
+          "    <>\n" +
+          indentBlock(source, 6) +
+          "\n" +
+          "    </>\n" +
+          "  );\n" +
+          "}"
+        );
+      }
+
+      function compileComponent(source) {
+        const normalized = normalizeSource(source);
+        const compiled = Babel.transform(normalized, {
+          filename: "snippet.tsx",
+          presets: [
+            ["react", { runtime: "classic" }],
+            ["typescript", { allExtensions: true, isTSX: true }]
+          ]
+        }).code;
+
+        const createComponent = new Function(
+          "React",
+          '"use strict";\n' +
+            "const { Children, Fragment, Suspense, cloneElement, createContext, createElement, forwardRef, isValidElement, lazy, memo, startTransition, useCallback, useContext, useDebugValue, useDeferredValue, useEffect, useId, useImperativeHandle, useInsertionEffect, useLayoutEffect, useMemo, useReducer, useRef, useState, useSyncExternalStore, useTransition } = React;\n" +
+            compiled +
+            "\nif (typeof __jsxpressComponent === 'undefined') {\n" +
+            "  throw new Error('JSXPress could not find a component to render.');\n" +
+            "}\n" +
+            "return __jsxpressComponent;"
+        );
+
+        return createComponent(React);
+      }
+
+      function renderPreview(source) {
+        const Component = compileComponent(source);
+        renderVersion += 1;
+
+        previewRoot.render(
+          React.createElement(
+            PreviewErrorBoundary,
+            { resetKey: renderVersion },
+            React.createElement(Component)
+          )
+        );
+      }
+
+      function performRender() {
+        setStatus("rendering", "Rendering");
+        clearError();
+
+        try {
+          renderPreview(editor.value);
+          setStatus("ready", "Ready");
+        } catch (error) {
+          showError(error);
+        }
+      }
+
+      function scheduleRender() {
+        window.clearTimeout(renderTimer);
+        setStatus("rendering", "Rendering");
+        renderTimer = window.setTimeout(performRender, RENDER_DELAY);
+      }
+
+      async function copySource() {
+        try {
+          await navigator.clipboard.writeText(editor.value);
+          const previousLabel = copyButton.textContent;
+          copyButton.textContent = "Copied";
+          window.setTimeout(function () {
+            copyButton.textContent = previousLabel;
+          }, COPY_RESET_DELAY);
+        } catch (error) {
+          showError("Copy failed. Your browser may be blocking clipboard access.");
+        }
+      }
+
+      function buildShareUrl() {
+        const hash = "#jsx=" + encodeSource(editor.value);
+        return window.location.origin + window.location.pathname + hash;
+      }
+
+      async function copyShareLink() {
+        try {
+          await navigator.clipboard.writeText(buildShareUrl());
+          const previousLabel = shareButton.textContent;
+          shareButton.textContent = "Link copied";
+          window.setTimeout(function () {
+            shareButton.textContent = previousLabel;
+          }, COPY_RESET_DELAY);
+        } catch (error) {
+          showError("Copy link failed. Your browser may be blocking clipboard access.");
+        }
+      }
+
+      function resetSource() {
+        editor.value = DEFAULT_SOURCE;
+        persistSource();
+        scheduleRender();
+      }
+
+      function persistSource() {
+        localStorage.setItem(STORAGE_KEY, editor.value);
+      }
+
+      function readSourceFromHash() {
+        const match = window.location.hash.match(/^#jsx=([\s\S]+)$/);
+
+        if (!match) {
+          return "";
+        }
+
+        try {
+          return decodeSource(match[1]);
+        } catch (error) {
+          showError("This shared link could not be decoded.");
+          return "";
+        }
+      }
+
+      function loadSource() {
+        const shared = readSourceFromHash();
+
+        if (shared) {
+          editor.value = shared;
+          return;
+        }
+
+        const saved = localStorage.getItem(STORAGE_KEY);
+        editor.value = saved ? saved : DEFAULT_SOURCE;
+      }
+
+      window.addEventListener("error", function (event) {
+        if (event.error) {
+          showError(event.error);
+        }
+      });
+
+      window.addEventListener("unhandledrejection", function (event) {
+        showError(event.reason || "Unhandled promise rejection");
+      });
+
+      editor.addEventListener("input", function () {
+        persistSource();
+        scheduleRender();
+      });
+
+      copyButton.addEventListener("click", copySource);
+      shareButton.addEventListener("click", copyShareLink);
+      resetButton.addEventListener("click", resetSource);
+      window.addEventListener("hashchange", function () {
+        const shared = readSourceFromHash();
+
+        if (!shared) {
+          return;
+        }
+
+        editor.value = shared;
+        persistSource();
+        scheduleRender();
+      });
+
+      loadSource();
+      performRender();
+    </script>
+  </body>
+</html>
