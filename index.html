@@ -7,20 +7,15 @@
     <style>
       :root {
         color-scheme: dark;
-        --bg: #0f172a;
-        --panel: #111827;
-        --panel-border: rgba(148, 163, 184, 0.16);
-        --panel-muted: #1f2937;
         --text: #e5e7eb;
         --muted: #94a3b8;
-        --accent: #60a5fa;
-        --accent-strong: #3b82f6;
+        --panel-border: rgba(148, 163, 184, 0.16);
+        --shadow: 0 16px 50px rgba(15, 23, 42, 0.18);
         --danger-bg: rgba(239, 68, 68, 0.14);
         --danger-border: rgba(248, 113, 113, 0.35);
         --danger-text: #fecaca;
         --preview-bg: #ffffff;
         --preview-text: #111827;
-        --shadow: 0 16px 50px rgba(15, 23, 42, 0.18);
       }
 
       * {
@@ -58,18 +53,11 @@
         background: rgba(15, 23, 42, 0.84);
         border-bottom: 1px solid rgba(148, 163, 184, 0.14);
         display: flex;
-        gap: 18px;
         justify-content: space-between;
         padding: 18px 24px;
         position: sticky;
         top: 0;
         z-index: 10;
-      }
-
-      .brand {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
       }
 
       .brand-mark {
@@ -79,117 +67,92 @@
         letter-spacing: -0.02em;
       }
 
-      .brand-copy {
-        color: var(--muted);
-        font-size: 0.95rem;
-        line-height: 1.4;
-        max-width: 720px;
+      .action-row {
+        display: flex;
+        gap: 10px;
+      }
+
+      .icon-button {
+        align-items: center;
+        appearance: none;
+        background: rgba(148, 163, 184, 0.08);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 999px;
+        color: var(--text);
+        cursor: pointer;
+        display: inline-flex;
+        height: 42px;
+        justify-content: center;
+        padding: 0;
+        transition:
+          background 0.15s ease,
+          border-color 0.15s ease,
+          transform 0.15s ease,
+          opacity 0.15s ease;
+        width: 42px;
+      }
+
+      .icon-button:hover:not(:disabled) {
+        background: rgba(96, 165, 250, 0.14);
+        border-color: rgba(96, 165, 250, 0.3);
+        color: #dbeafe;
+        transform: translateY(-1px);
+      }
+
+      .icon-button:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      .icon-button:disabled {
+        cursor: default;
+        opacity: 0.45;
+      }
+
+      .button-icon {
+        fill: none;
+        height: 18px;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 1.8;
+        width: 18px;
       }
 
       .workspace {
-        display: grid;
-        gap: 20px;
-        grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
+        --editor-size: 50%;
+        display: flex;
         min-height: 0;
         padding: 20px 24px 24px;
+      }
+
+      .workspace.resizing,
+      .workspace.resizing * {
+        cursor: col-resize;
+        user-select: none;
       }
 
       .pane {
         border: 1px solid var(--panel-border);
         border-radius: 20px;
         box-shadow: var(--shadow);
-        display: grid;
         min-height: 0;
         overflow: hidden;
       }
 
       .editor-pane {
         background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
-        grid-template-rows: auto auto 1fr auto;
+        display: grid;
+        flex: 0 0 var(--editor-size);
+        min-width: 280px;
+        padding: 0;
       }
 
       .preview-pane {
         background: var(--preview-bg);
         color: var(--preview-text);
-        grid-template-rows: auto 1fr;
-      }
-
-      .pane-header,
-      .toolbar {
-        align-items: center;
-        display: flex;
-        gap: 12px;
-        justify-content: space-between;
-        padding: 18px 20px;
-      }
-
-      .pane-header {
-        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
-      }
-
-      .toolbar {
-        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
-        color: var(--muted);
-        flex-wrap: wrap;
-        font-size: 0.92rem;
-        line-height: 1.45;
-      }
-
-      .pane-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-        letter-spacing: 0.02em;
-        text-transform: uppercase;
-      }
-
-      .pane-title-group {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-
-      .pane-subtitle {
-        color: var(--muted);
-        font-size: 0.92rem;
-        line-height: 1.4;
-      }
-
-      .button-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-      }
-
-      .action-button {
-        appearance: none;
-        background: rgba(96, 165, 250, 0.12);
-        border: 1px solid rgba(96, 165, 250, 0.28);
-        border-radius: 999px;
-        color: #dbeafe;
-        cursor: pointer;
-        font-size: 0.92rem;
-        font-weight: 600;
-        padding: 10px 14px;
-        transition:
-          background 0.15s ease,
-          border-color 0.15s ease,
-          transform 0.15s ease;
-      }
-
-      .action-button:hover {
-        background: rgba(96, 165, 250, 0.18);
-        border-color: rgba(96, 165, 250, 0.42);
-        transform: translateY(-1px);
-      }
-
-      .action-button:active {
-        transform: translateY(0);
-      }
-
-      .action-button.secondary {
-        background: rgba(148, 163, 184, 0.08);
-        border-color: rgba(148, 163, 184, 0.2);
-        color: var(--text);
+        display: grid;
+        flex: 1 1 auto;
+        min-width: 280px;
       }
 
       .editor {
@@ -199,13 +162,13 @@
         min-height: 0;
         outline: none;
         overflow: auto;
-        padding: 20px;
+        padding: 22px;
         resize: none;
         width: 100%;
         font-family:
           "SFMono-Regular", SFMono-Regular, ui-monospace, Menlo, Monaco,
           Consolas, "Liberation Mono", "Courier New", monospace;
-        font-size: 0.94rem;
+        font-size: 0.95rem;
         line-height: 1.6;
         tab-size: 2;
       }
@@ -214,43 +177,9 @@
         color: #64748b;
       }
 
-      .status-strip {
-        border-top: 1px solid rgba(148, 163, 184, 0.12);
-        display: grid;
-        gap: 10px;
-        padding: 16px 20px 18px;
-      }
-
-      .status-chip {
-        align-items: center;
-        display: inline-flex;
-        gap: 8px;
-        border-radius: 999px;
-        font-size: 0.84rem;
-        font-weight: 600;
-        padding: 7px 11px;
-        width: fit-content;
-      }
-
-      .status-chip.ready {
-        background: rgba(52, 211, 153, 0.14);
-        color: #bbf7d0;
-      }
-
-      .status-chip.rendering {
-        background: rgba(96, 165, 250, 0.14);
-        color: #bfdbfe;
-      }
-
-      .status-chip.error {
-        background: var(--danger-bg);
-        color: var(--danger-text);
-      }
-
       .error-panel {
         background: var(--danger-bg);
-        border: 1px solid var(--danger-border);
-        border-radius: 14px;
+        border-top: 1px solid var(--danger-border);
         color: var(--danger-text);
         display: none;
         font-family:
@@ -258,6 +187,7 @@
           Consolas, "Liberation Mono", "Courier New", monospace;
         font-size: 0.88rem;
         line-height: 1.55;
+        max-height: 180px;
         overflow: auto;
         padding: 14px 16px;
         white-space: pre-wrap;
@@ -267,8 +197,36 @@
         display: block;
       }
 
-      .preview-pane .pane-header {
-        border-bottom-color: rgba(15, 23, 42, 0.08);
+      .workspace-divider {
+        align-items: center;
+        appearance: none;
+        background: transparent;
+        border: 0;
+        cursor: col-resize;
+        display: inline-flex;
+        flex: 0 0 18px;
+        justify-content: center;
+        margin: 0 8px;
+        padding: 0;
+        touch-action: none;
+      }
+
+      .workspace-divider-line {
+        background: rgba(148, 163, 184, 0.28);
+        border-radius: 999px;
+        display: block;
+        height: 100%;
+        transition: background 0.15s ease;
+        width: 4px;
+      }
+
+      .workspace-divider:hover .workspace-divider-line,
+      .workspace-divider:focus-visible .workspace-divider-line {
+        background: rgba(96, 165, 250, 0.8);
+      }
+
+      .workspace-divider:focus-visible {
+        outline: none;
       }
 
       .preview-stage {
@@ -292,19 +250,20 @@
 
       .preview-empty,
       .preview-error {
-        align-items: center;
+        align-content: center;
         color: #475569;
         display: grid;
-        gap: 10px;
-        justify-items: start;
-        min-height: 220px;
-        padding: 28px;
+        gap: 12px;
+        justify-items: center;
+        min-height: 260px;
+        padding: 32px 24px;
+        text-align: center;
       }
 
       .preview-empty strong,
       .preview-error strong {
         color: #0f172a;
-        font-size: 1rem;
+        font-size: 1.05rem;
       }
 
       .preview-error {
@@ -314,14 +273,61 @@
 
       .preview-note {
         color: #64748b;
-        font-size: 0.92rem;
+        font-size: 0.94rem;
         line-height: 1.5;
+        max-width: 360px;
+      }
+
+      .preview-empty-action {
+        appearance: none;
+        background: #111827;
+        border: 0;
+        border-radius: 999px;
+        color: #ffffff;
+        cursor: pointer;
+        font-size: 0.92rem;
+        font-weight: 600;
+        padding: 10px 16px;
+      }
+
+      .toast {
+        background: rgba(15, 23, 42, 0.92);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 999px;
+        bottom: 24px;
+        color: #f8fafc;
+        opacity: 0;
+        padding: 12px 16px;
+        pointer-events: none;
+        position: fixed;
+        right: 24px;
+        transform: translateY(8px);
+        transition:
+          opacity 0.18s ease,
+          transform 0.18s ease;
+        z-index: 20;
+      }
+
+      .toast.visible {
+        opacity: 1;
+        transform: translateY(0);
       }
 
       @media (max-width: 900px) {
         .workspace {
-          grid-template-columns: 1fr;
-          grid-template-rows: minmax(360px, 1fr) minmax(320px, 1fr);
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .editor-pane,
+        .preview-pane {
+          flex: none;
+          min-height: 320px;
+          width: 100%;
+        }
+
+        .workspace-divider {
+          display: none;
         }
       }
 
@@ -333,20 +339,22 @@
         }
 
         .site-header {
-          align-items: flex-start;
-          flex-direction: column;
-        }
-
-        .pane-header,
-        .toolbar,
-        .status-strip,
-        .preview-stage {
-          padding-left: 16px;
-          padding-right: 16px;
+          gap: 12px;
         }
 
         .editor {
+          padding: 18px;
+        }
+
+        .preview-stage {
           padding: 16px;
+        }
+
+        .toast {
+          bottom: 16px;
+          left: 16px;
+          right: 16px;
+          text-align: center;
         }
       }
     </style>
@@ -354,73 +362,69 @@
   <body>
     <div class="app-shell">
       <header class="site-header">
-        <div class="brand">
-          <div class="brand-mark">JSXPress</div>
-          <div class="brand-copy">
-            Paste JSX, a component body, or a small React component file and
-            see it render instantly.
-          </div>
+        <div class="brand-mark">JSXPress</div>
+        <div class="action-row">
+          <button
+            class="icon-button"
+            id="example-button"
+            type="button"
+            aria-label="Load example"
+            title="Load example"
+          >
+            <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3l1.7 4.7L18 9.4l-4.3 1.7L12 16l-1.7-4.9L6 9.4l4.3-1.7z"></path>
+            </svg>
+          </button>
+          <button
+            class="icon-button"
+            id="copy-button"
+            type="button"
+            aria-label="Copy JSX"
+            title="Copy JSX"
+          >
+            <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="9" y="9" width="11" height="11" rx="2"></rect>
+              <path d="M5 15V6a2 2 0 0 1 2-2h9"></path>
+            </svg>
+          </button>
+          <button
+            class="icon-button"
+            id="share-button"
+            type="button"
+            aria-label="Copy share link"
+            title="Copy a link that reopens this JSX"
+          >
+            <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M10 13a5 5 0 0 0 7.1 0l2.4-2.4a5 5 0 0 0-7.1-7.1L10.8 5"></path>
+              <path d="M14 11a5 5 0 0 0-7.1 0L4.5 13.4a5 5 0 0 0 7.1 7.1L13.2 19"></path>
+            </svg>
+          </button>
         </div>
       </header>
 
-      <main class="workspace">
+      <main class="workspace" id="workspace">
         <section class="pane editor-pane" aria-label="JSX editor">
-          <div class="pane-header">
-            <div class="pane-title-group">
-              <div class="pane-title">Editor</div>
-              <div class="pane-subtitle">
-                Scroll, paste, tweak, and copy your snippet without any setup.
-              </div>
-            </div>
-            <div class="button-row">
-              <button class="action-button" id="copy-button" type="button">
-                Copy JSX
-              </button>
-              <button
-                class="action-button secondary"
-                id="share-button"
-                type="button"
-              >
-                Copy link
-              </button>
-              <button
-                class="action-button secondary"
-                id="reset-button"
-                type="button"
-              >
-                Reset example
-              </button>
-            </div>
-          </div>
-
-          <div class="toolbar">
-            Accepts raw JSX, component bodies with hooks, and common
-            <code>export default</code> React snippets.
-          </div>
-
           <textarea
             id="editor"
             class="editor"
             spellcheck="false"
             aria-label="JSX source editor"
-            placeholder="Paste JSX here"
+            placeholder="Paste JSX or a React component..."
           ></textarea>
-
-          <div class="status-strip">
-            <div class="status-chip ready" id="status-chip">Ready</div>
-            <div class="error-panel" id="error-panel" role="status"></div>
-          </div>
+          <div class="error-panel" id="error-panel" role="status"></div>
         </section>
 
+        <button
+          class="workspace-divider"
+          id="workspace-divider"
+          type="button"
+          aria-label="Resize editor and preview"
+          title="Drag to resize"
+        >
+          <span class="workspace-divider-line"></span>
+        </button>
+
         <section class="pane preview-pane" aria-label="Rendered preview">
-          <div class="pane-header">
-            <div class="pane-title-group">
-              <div class="pane-title">Preview</div>
-              <div class="pane-subtitle">
-                Live React rendering powered by Babel in the browser.
-              </div>
-            </div>
-          </div>
           <div class="preview-stage">
             <div class="preview-canvas">
               <div class="preview-content" id="preview-root"></div>
@@ -430,14 +434,51 @@
       </main>
     </div>
 
+    <div class="toast" id="toast" aria-live="polite"></div>
+
     <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js"></script>
     <script>
       const STORAGE_KEY = "jsxpress-source";
-      const COPY_RESET_DELAY = 1600;
+      const SPLIT_KEY = "jsxpress-split";
+      const COPY_RESET_DELAY = 2200;
       const RENDER_DELAY = 120;
+      const DEFAULT_SPLIT = 50;
+      const MIN_SPLIT = 28;
+      const MAX_SPLIT = 72;
       const DEFAULT_SOURCE = `const [count, setCount] = React.useState(0);
+
+return (
+  <div
+    style={{
+      color: "#111827",
+      fontFamily: "system-ui, sans-serif",
+      lineHeight: 1.6,
+      padding: 24
+    }}
+  >
+    <h1 style={{ marginBottom: 12, marginTop: 0 }}>JSXPress</h1>
+    <p style={{ marginTop: 0 }}>This example uses state and an event handler.</p>
+    <button
+      onClick={() => setCount(count + 1)}
+      style={{
+        background: "#111827",
+        border: 0,
+        borderRadius: 999,
+        color: "#ffffff",
+        cursor: "pointer",
+        fontSize: 15,
+        fontWeight: 600,
+        padding: "10px 16px"
+      }}
+    >
+      Clicked {count} times
+    </button>
+  </div>
+);`;
+
+      const LEGACY_DEFAULT_SOURCE = `const [count, setCount] = React.useState(0);
 
 return (
   <div
@@ -482,17 +523,22 @@ return (
   </div>
 );`;
 
+      const workspace = document.getElementById("workspace");
       const editor = document.getElementById("editor");
+      const exampleButton = document.getElementById("example-button");
       const copyButton = document.getElementById("copy-button");
       const shareButton = document.getElementById("share-button");
-      const resetButton = document.getElementById("reset-button");
+      const divider = document.getElementById("workspace-divider");
+      const toast = document.getElementById("toast");
       const errorPanel = document.getElementById("error-panel");
-      const statusChip = document.getElementById("status-chip");
       const previewRootElement = document.getElementById("preview-root");
       const previewRoot = ReactDOM.createRoot(previewRootElement);
 
       let renderTimer = 0;
       let renderVersion = 0;
+      let toastTimer = 0;
+      let dragging = false;
+      let splitPercent = DEFAULT_SPLIT;
 
       class PreviewErrorBoundary extends React.Component {
         constructor(props) {
@@ -505,7 +551,7 @@ return (
         }
 
         componentDidCatch(error) {
-          showError(error);
+          showRenderError(error);
         }
 
         componentDidUpdate(prevProps) {
@@ -535,34 +581,24 @@ return (
         }
       }
 
-      function setStatus(kind, message) {
-        statusChip.className = "status-chip " + kind;
-        statusChip.textContent = message;
-      }
-
-      function showError(error) {
-        const message = formatErrorMessage(error);
-        errorPanel.textContent = message;
-        errorPanel.classList.add("visible");
-        setStatus("error", "Error");
-
-        previewRoot.render(
-          React.createElement(
-            "div",
-            { className: "preview-empty" },
-            React.createElement("strong", null, "Preview unavailable"),
-            React.createElement(
-              "div",
-              { className: "preview-note" },
-              "Fix the JSX or component code to resume rendering."
-            )
-          )
-        );
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add("visible");
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(function () {
+          toast.classList.remove("visible");
+        }, COPY_RESET_DELAY);
       }
 
       function clearError() {
         errorPanel.textContent = "";
         errorPanel.classList.remove("visible");
+      }
+
+      function showRenderError(error) {
+        errorPanel.textContent = formatErrorMessage(error);
+        errorPanel.classList.add("visible");
+        renderUnavailableState();
       }
 
       function formatErrorMessage(error) {
@@ -579,6 +615,51 @@ return (
         }
 
         return String(error);
+      }
+
+      function syncActionState() {
+        const hasSource = editor.value.trim().length > 0;
+        copyButton.disabled = !hasSource;
+        shareButton.disabled = !hasSource;
+      }
+
+      function renderEmptyState() {
+        previewRoot.render(
+          React.createElement(
+            "div",
+            { className: "preview-empty" },
+            React.createElement("strong", null, "Paste JSX to preview"),
+            React.createElement(
+              "div",
+              { className: "preview-note" },
+              "Use the editor on the left, or load an example."
+            ),
+            React.createElement(
+              "button",
+              {
+                className: "preview-empty-action",
+                onClick: loadExampleSource,
+                type: "button"
+              },
+              "Load example"
+            )
+          )
+        );
+      }
+
+      function renderUnavailableState() {
+        previewRoot.render(
+          React.createElement(
+            "div",
+            { className: "preview-error" },
+            React.createElement("strong", null, "Preview unavailable"),
+            React.createElement(
+              "div",
+              { className: "preview-note" },
+              "Fix the JSX to keep rendering."
+            )
+          )
+        );
       }
 
       function normalizeLineEndings(value) {
@@ -848,62 +929,69 @@ return (
       }
 
       function performRender() {
-        setStatus("rendering", "Rendering");
+        const source = editor.value;
+        syncActionState();
         clearError();
 
+        if (!source.trim()) {
+          renderEmptyState();
+          return;
+        }
+
         try {
-          renderPreview(editor.value);
-          setStatus("ready", "Ready");
+          renderPreview(source);
         } catch (error) {
-          showError(error);
+          showRenderError(error);
         }
       }
 
       function scheduleRender() {
         window.clearTimeout(renderTimer);
-        setStatus("rendering", "Rendering");
         renderTimer = window.setTimeout(performRender, RENDER_DELAY);
       }
 
       async function copySource() {
         try {
           await navigator.clipboard.writeText(editor.value);
-          const previousLabel = copyButton.textContent;
-          copyButton.textContent = "Copied";
-          window.setTimeout(function () {
-            copyButton.textContent = previousLabel;
-          }, COPY_RESET_DELAY);
+          showToast("Copied JSX");
         } catch (error) {
-          showError("Copy failed. Your browser may be blocking clipboard access.");
+          showToast("Copy failed");
         }
       }
 
-      function buildShareUrl() {
+      function setShareHash() {
         const hash = "#jsx=" + encodeSource(editor.value);
+        window.history.replaceState(null, "", hash);
         return window.location.origin + window.location.pathname + hash;
       }
 
       async function copyShareLink() {
         try {
-          await navigator.clipboard.writeText(buildShareUrl());
-          const previousLabel = shareButton.textContent;
-          shareButton.textContent = "Link copied";
-          window.setTimeout(function () {
-            shareButton.textContent = previousLabel;
-          }, COPY_RESET_DELAY);
+          const shareUrl = setShareHash();
+          await navigator.clipboard.writeText(shareUrl);
+          showToast("Share link copied. Opening it restores this JSX.");
         } catch (error) {
-          showError("Copy link failed. Your browser may be blocking clipboard access.");
+          showToast("Copy link failed");
         }
       }
 
-      function resetSource() {
+      function loadExampleSource() {
         editor.value = DEFAULT_SOURCE;
         persistSource();
+        syncActionState();
+        editor.focus();
         scheduleRender();
       }
 
       function persistSource() {
         localStorage.setItem(STORAGE_KEY, editor.value);
+      }
+
+      function clearShareHash() {
+        if (window.location.hash.startsWith("#jsx=")) {
+          const target = window.location.pathname + window.location.search;
+          window.history.replaceState(null, "", target);
+        }
       }
 
       function readSourceFromHash() {
@@ -916,9 +1004,13 @@ return (
         try {
           return decodeSource(match[1]);
         } catch (error) {
-          showError("This shared link could not be decoded.");
+          showToast("This share link could not be decoded");
           return "";
         }
+      }
+
+      function isLegacyExample(value) {
+        return value === DEFAULT_SOURCE || value === LEGACY_DEFAULT_SOURCE;
       }
 
       function loadSource() {
@@ -930,40 +1022,121 @@ return (
         }
 
         const saved = localStorage.getItem(STORAGE_KEY);
-        editor.value = saved ? saved : DEFAULT_SOURCE;
+
+        if (saved === null || isLegacyExample(saved)) {
+          editor.value = "";
+          return;
+        }
+
+        editor.value = saved;
+      }
+
+      function clampSplit(value) {
+        return Math.min(MAX_SPLIT, Math.max(MIN_SPLIT, value));
+      }
+
+      function applySplit(value) {
+        splitPercent = clampSplit(value);
+        workspace.style.setProperty("--editor-size", splitPercent + "%");
+        localStorage.setItem(SPLIT_KEY, String(splitPercent));
+      }
+
+      function loadSplit() {
+        const saved = Number(localStorage.getItem(SPLIT_KEY));
+        if (Number.isFinite(saved)) {
+          applySplit(saved);
+          return;
+        }
+
+        applySplit(DEFAULT_SPLIT);
+      }
+
+      function updateSplitFromPointer(clientX) {
+        const rect = workspace.getBoundingClientRect();
+        const next =
+          ((clientX - rect.left) / Math.max(rect.width, 1)) * 100;
+        applySplit(next);
+      }
+
+      function startResize(event) {
+        if (window.innerWidth <= 900) {
+          return;
+        }
+
+        dragging = true;
+        workspace.classList.add("resizing");
+        divider.setPointerCapture(event.pointerId);
+      }
+
+      function moveResize(event) {
+        if (!dragging) {
+          return;
+        }
+
+        updateSplitFromPointer(event.clientX);
+      }
+
+      function stopResize(event) {
+        if (!dragging) {
+          return;
+        }
+
+        dragging = false;
+        workspace.classList.remove("resizing");
+        if (event && typeof event.pointerId === "number") {
+          divider.releasePointerCapture(event.pointerId);
+        }
       }
 
       window.addEventListener("error", function (event) {
         if (event.error) {
-          showError(event.error);
+          showRenderError(event.error);
         }
       });
 
       window.addEventListener("unhandledrejection", function (event) {
-        showError(event.reason || "Unhandled promise rejection");
+        showRenderError(event.reason || "Unhandled promise rejection");
       });
 
       editor.addEventListener("input", function () {
         persistSource();
+        syncActionState();
+        clearShareHash();
         scheduleRender();
       });
 
+      exampleButton.addEventListener("click", loadExampleSource);
       copyButton.addEventListener("click", copySource);
       shareButton.addEventListener("click", copyShareLink);
-      resetButton.addEventListener("click", resetSource);
+
+      divider.addEventListener("pointerdown", startResize);
+      divider.addEventListener("pointermove", moveResize);
+      divider.addEventListener("pointerup", stopResize);
+      divider.addEventListener("pointercancel", stopResize);
+      divider.addEventListener("keydown", function (event) {
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          applySplit(splitPercent - 4);
+        }
+
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          applySplit(splitPercent + 4);
+        }
+      });
+
       window.addEventListener("hashchange", function () {
         const shared = readSourceFromHash();
 
-        if (!shared) {
-          return;
-        }
-
         editor.value = shared;
         persistSource();
+        syncActionState();
         scheduleRender();
       });
 
+      loadSplit();
       loadSource();
+      syncActionState();
       performRender();
     </script>
   </body>
